@@ -1,0 +1,83 @@
+# general setup
+env HOME=$WORK/home
+env PATH=$GOPATH/bin:$PATH
+
+# for the comamnd-based directive
+go install example.com/copy3
+
+# create outdirs as required
+mkdir abc
+
+# first round
+gg ./...
+exists gen_input1_copy1.go
+exists gen_input2_copy2.go
+exists gen_input3_copy3.go
+exists copy1_run1
+exists copy2_run1
+exists copy3_run1
+exists copy1_run2
+exists copy2_run2
+exists copy3_run2
+! exists copy1_run3
+! exists copy2_run3
+! exists copy3_run3
+go test
+
+# second round
+rm gen_input1_copy1.go
+rm gen_input2_copy2.go
+rm gen_input3_copy3.go
+gg ./...
+exists gen_input1_copy1.go
+exists gen_input2_copy2.go
+exists gen_input3_copy3.go
+! exists copy1_run3
+! exists copy2_run3
+! exists copy3_run3
+
+-- go.mod --
+module mod
+
+require example.com/copy1 v1.0.0
+
+-- tools.go --
+// +build tools
+
+package tools
+
+require _ "example.com/copy1"
+
+-- input1 --
+package main
+
+const Name = "simple"
+
+-- input2 --
+package main
+
+const Surname = "problem"
+
+-- input3 --
+package main
+
+const Title = "our"
+
+-- main.go --
+package main
+
+//go:generate gobin -m -run example.com/copy1 0.5 input1
+//go:generate gobin -run example.com/copy2 0.5 input2
+//go:generate copy3 -outdir:first abc 0.5 input3
+
+func main() {
+  println(Name)
+}
+
+-- main_test.go --
+package main
+
+-- ignored.go --
+// +build ignore
+
+package main

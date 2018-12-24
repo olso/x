@@ -1,0 +1,13 @@
+# general setup
+env HOME=$WORK/home
+env PATH=$GOPATH/bin:$PATH
+
+# test
+! gg example.com/copy1
+! stdout .+
+stderr 'cannot generate packages outside the main module: example.com/copy1'
+
+-- go.mod --
+module mod
+
+require example.com/copy1 v1.0.0

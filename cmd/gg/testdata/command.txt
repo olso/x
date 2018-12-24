@@ -1,0 +1,48 @@
+# general setup
+env HOME=$WORK/home
+env PATH=$GOPATH/bin:$PATH
+
+# for the comamnd-based directive
+go install example.com/copy1
+
+# initial sanity check
+! exists gen_input1_copy1.go
+
+# first round
+gg -trace ./...
+exists gen_input1_copy1.go
+exists copy1_run1
+exists copy1_run2
+! exists copy1_run3
+go test
+
+# second round
+rm gen_input1_copy1.go
+gg -trace ./...
+exists gen_input1_copy1.go
+! exists copy1_run3
+
+-- go.mod --
+module mod
+
+-- input1 --
+package main
+
+const Name = "simple"
+
+-- main.go --
+package main
+
+//go:generate copy1 5 input1
+
+func main() {
+  println(Name)
+}
+
+-- main_test.go --
+package main
+
+-- ignored.go --
+// +build ignore
+
+package main

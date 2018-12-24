@@ -1,0 +1,2 @@
+! gg -help
+stderr 'gg'
